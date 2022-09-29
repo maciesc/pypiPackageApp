@@ -1,2 +1,4 @@
 .idea
 poetry.lock
+pypiPackageApp/__pycache__/
+db.sqlite3
