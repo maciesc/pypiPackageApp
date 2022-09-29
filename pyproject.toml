@@ -9,6 +9,9 @@ readme = "README.md"
 python = "^3.8"
 Django = "^4.1.1"
 pypi-rss = "^2020.12.3"
+APScheduler = "^3.9.1"
+elasticsearch = "^8.4.2"
+black = "^22.8.0"
 
 
 [build-system]

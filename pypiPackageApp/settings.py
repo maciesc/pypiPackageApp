@@ -37,6 +37,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
+    'packages'
 ]
 
 MIDDLEWARE = [
@@ -121,3 +122,17 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+
+
+#ELASTIC_CLOUD_CLIENT
+
+from elasticsearch import Elasticsearch
+import configparser
+
+config = configparser.ConfigParser()
+config.read('elastic.ini')
+INDEX_NAME = 'pypi-packages'
+ES_CLIENT = Elasticsearch(
+    cloud_id=config['ELASTIC']['cloud_id'],
+    http_auth=(config['ELASTIC']['user'], config['ELASTIC']['password'])
+)
