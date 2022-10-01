@@ -15,5 +15,8 @@ Including another URLconf
 """
 from django.urls import path
 
+from packages.views import packages_list
+
 urlpatterns = [
+    path('', packages_list)
 ]
