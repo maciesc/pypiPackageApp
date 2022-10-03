@@ -4,7 +4,7 @@ import elastic_transport
 from django.shortcuts import render
 from django.db.models import Q
 
-from pypiPackageApp.settings import ES_CLIENT, INDEX_NAME
+from pypiPackageApp.settings import ES_CLIENT, INDEX_NAME, ITEMS_PER_PAGE
 from .models import Package
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
@@ -22,7 +22,7 @@ def packages_list(request):
     else:
         packages = [hit["_source"] for hit in elastic_response["hits"]["hits"]]
 
-    paginator = Paginator(packages, 6)
+    paginator = Paginator(packages, ITEMS_PER_PAGE)
 
     page = request.GET.get("page")
     try:
