@@ -5,3 +5,4 @@ db.sqlite3
 elastic.ini
 packages/migrations/__pycache__/
 packages/__pycache__/
+.coverage

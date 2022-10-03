@@ -1,3 +1,5 @@
+from typing import Dict
+
 import elastic_transport
 from django.shortcuts import render
 from django.db.models import Q
@@ -9,10 +11,34 @@ from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
 
 
 def packages_list(request):
-    packages = Package.objects.all()
     query = request.GET.get("q")
+    elastic_query = __create_elastic_query(query)
+    try:
+        elastic_response = ES_CLIENT.search(
+            index=INDEX_NAME, query=elastic_query, size=10000
+        )
+    except (ValueError, elastic_transport.ConnectionError):
+        packages = __get_packages_queryset_by_query(query)
+    else:
+        packages = [hit["_source"] for hit in elastic_response["hits"]["hits"]]
+
+    paginator = Paginator(packages, 6)
+
+    page = request.GET.get("page")
+    try:
+        packages = paginator.page(page)
+    except PageNotAnInteger:
+        packages = paginator.page(1)
+    except EmptyPage:
+        packages = paginator.page(paginator.num_pages)
+
+    context = {"packages": packages}
+    return render(request, "packages-list.html", context)
+
+
+def __create_elastic_query(query: str) -> Dict:
     if query:
-        elastic_query = {
+        return {
             "bool": {
                 "should": [
                     {"match": {"name": {"query": query, "operator": "and"}}},
@@ -31,32 +57,20 @@ def packages_list(request):
                 "minimum_should_match": 1,
             }
         }
-        try:
-            response = ES_CLIENT.search(
-                index=INDEX_NAME, query=elastic_query, size=10000
-            )
-        except (ValueError, elastic_transport.ConnectionError):
-            packages = Package.objects.filter(
-                Q(name__icontains=query)
-                | Q(author_email__icontains=query)
-                | Q(description__icontains=query)
-                | Q(keywords__icontains=query)
-                | Q(version__icontains=query)
-                | Q(maintainer__icontains=query)
-                | Q(maintainer_email__icontains=query)
-            ).distinct()
-        else:
-            packages = [hit["_source"] for hit in response["hits"]["hits"]]
+    else:
+        return {"match_all": {}}
 
-    paginator = Paginator(packages, 6)
-    page = request.GET.get("page")
 
-    try:
-        packages = paginator.page(page)
-    except PageNotAnInteger:
-        packages = paginator.page(1)
-    except EmptyPage:
-        packages = paginator.page(paginator.num_pages)
-
-    context = {"packages": packages}
-    return render(request, "packages-list.html", context)
+def __get_packages_queryset_by_query(query):
+    if query:
+        return Package.objects.filter(
+            Q(name__icontains=query)
+            | Q(author_email__icontains=query)
+            | Q(description__icontains=query)
+            | Q(keywords__icontains=query)
+            | Q(version__icontains=query)
+            | Q(maintainer__icontains=query)
+            | Q(maintainer_email__icontains=query)
+        ).distinct()
+    else:
+        return Package.objects.all()

@@ -36,7 +36,8 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'packages'
+    'packages',
+    'django_nose'
 ]
 
 MIDDLEWARE = [
@@ -135,3 +136,9 @@ ES_CLIENT = Elasticsearch(
     cloud_id=config['ELASTIC']['cloud_id'],
     http_auth=(config['ELASTIC']['user'], config['ELASTIC']['password'])
 )
+
+TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
+NOSE_ARGS = [
+    '--with-coverage',
+    '--cover-package=packages',
+]
