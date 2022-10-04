@@ -15,8 +15,9 @@ Including another URLconf
 """
 from django.urls import path
 
-from packages.views import packages_list
+from packages.views import packages_list, json_newest_packages
 
 urlpatterns = [
-    path('', packages_list)
+    path('', packages_list),
+    path('newest_packages', json_newest_packages)
 ]

@@ -156,6 +156,22 @@ class PackagesListView(TestCase):
         )
 
 
+class JsonNewestPackagesView(TestCase):
+
+    @patch("packages.views.pypi_rss")
+    def test_returns_json_newest_packages(
+        self, pypi_rss
+    ):
+        pypi_package = [{'title': 'test', 'link': 'https://pypi.org/project/ctlog/', 'guid': 'https://pypi.org/project/ctlog/', 'description': 'SAT', 'author': None, 'pubdate': '2022-10-04 13:18:44', 'name': 'ctlog'}]
+        pypi_rss.get_newest_packages.return_value = pypi_package
+        client = Client()
+        response = client.get("/newest_packages")
+
+        assert response.status_code == 200
+        assert response.headers.get('content-type') == 'application/json'
+        assert response.json() == pypi_package
+
+
 class MockResponse:
     def __init__(self, json_data, status_code):
         self.json_data = json_data

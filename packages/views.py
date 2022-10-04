@@ -1,6 +1,7 @@
 from typing import Dict
-
+import json
 import elastic_transport
+import pypi_rss
 from django.shortcuts import render
 from django.db.models import Q
 
@@ -8,6 +9,7 @@ from pypiPackageApp.settings import ES_CLIENT, INDEX_NAME, ITEMS_PER_PAGE
 from .models import Package
 
 from django.core.paginator import Paginator, EmptyPage, PageNotAnInteger
+from django.http import HttpResponse
 
 
 def packages_list(request):
@@ -74,3 +76,8 @@ def __get_packages_queryset_by_query(query):
         ).distinct()
     else:
         return Package.objects.all()
+
+
+def json_newest_packages(request):
+    response_data = pypi_rss.get_newest_packages()
+    return HttpResponse(json.dumps(response_data, default=str), content_type="application/json")
